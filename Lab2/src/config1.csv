@@ -1,0 +1,10 @@
+CommandName,ClassName
+PUSH,Calculator.Push
+POP,Calculator.Pop
++,Calculator.Add
+-,Calculator.Div
+*,Calculator.Mult
+/,Calculator.Sub
+SQRT,Calculator.Sqrt
+PRINT,Calculator.Print
+DEFINE,Calculator.Define

@@ -1,0 +1,9 @@
+PUSH,Calculator$Push
+POP,Calculator$Pop
+ADD,Calculator$Add
+DIV,Calculator$Div
+MULT,Calculator$Mult
+SUB,Calculator$Sub
+SQRT,Calculator$Sqrt
+PRINT,Calculator$Print
+DEFINE,Calculator$Define
