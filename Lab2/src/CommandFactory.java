@@ -1,17 +1,21 @@
+import CalcException.BadConfigExc;
+
 import java.io.*;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 public class CommandFactory {
     private HashMap<String, String> config;
+    private static Logger log = Logger.getLogger(CommandFactory.class.getName());
 
     CommandFactory() {
         config = new HashMap<String, String>();
+        log.info("CommandFactory initializing");
         getConfig(new File("config.csv"));
     }
 
-    public Command getCommand(String name) {
+    public Calculator.Command getCommand(String name) {
         Object com = new Object();
-        //Command com = new Command();
         try {
             Class cl = Class.forName(config.get(name));
             try {
@@ -19,18 +23,12 @@ public class CommandFactory {
             } catch(Exception e) {
                 System.out.println(e.getMessage());
             }
-            Command c;
-            c = (Command)com;
+            Calculator.Command c;
+            c = (Calculator.Command)com;
             return c;
         } catch(ClassNotFoundException e) {
-
-        } //catch(InstantiationException e) {
-//
-//        } catch(IllegalAccessException e) {
-//
-//        }
-        Object ob = new Object();
-        return (Command)ob;
+            throw new BadConfigExc("can not find class from config");
+        }
     }
 
     private void getConfig(File conf) {
@@ -40,12 +38,12 @@ public class CommandFactory {
             String strLine;
             strLine = reader.readLine();
             if (!strLine.equals("CommandName,ClassName")){
-                //throw
+                throw new BadConfigExc("wrong config format");
             }
             while ((strLine = reader.readLine()) != null){
                 String[] words = strLine.split(",");
                 if (words.length != 2){
-                    //throw
+                    throw new BadConfigExc("wrong config format");
                 }
                 config.put(words[0], words[1]);
             }
@@ -61,10 +59,7 @@ public class CommandFactory {
                     e.printStackTrace(System.err);
                 }
             }
+            log.info("CommandFactory object was successfully created");
         }
-    }
-
-    static abstract class Command {
-        abstract void exec(Object obj, String[] args);
     }
 }
