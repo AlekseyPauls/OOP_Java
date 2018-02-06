@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.HashMap;
 import java.util.*;
+//import java.lang.Character;
 
 
 public class WordsFrequencyCounter {
@@ -47,15 +48,23 @@ public class WordsFrequencyCounter {
             String strLine;
             wordsNumber = 0;
             while ((strLine = reader.readLine()) != null){
-                String[] words = strLine.split(" ");
-                for (String word : words) {
-                    if(!frequency.containsKey(word)) {
-                        frequency.put(word, 1);
+                StringBuilder str = new StringBuilder(strLine);
+                int current_begin = 0;
+                String word = "";
+                for (int i = 0; i <= str.length(); i++) {
+                    if (i != str.length() && Character.isLetterOrDigit(str.charAt(i))) {
+                        word += str.charAt(i);
                     } else {
-                        frequency.put(word, frequency.get(word) + 1);
+                        if(!frequency.containsKey(word)) {
+                            frequency.put(word, 1);
+                        } else {
+                            frequency.put(word, frequency.get(word) + 1);
+                        }
+                        wordsNumber++;
+                        word = "";
                     }
-                    wordsNumber++;
                 }
+
             }
             ArrayList<HashMap.Entry<String,Integer>> sortedEntries = new ArrayList<HashMap.Entry<String,Integer>>(frequency.entrySet());
 
