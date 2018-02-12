@@ -1,7 +1,13 @@
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.LinkedList;
+
 public class Model {
     public enum CageState {BLACK, WHITE, VOID, MOD, MODBLACK, MODWHITE}
-    public enum GameMode {EASY, MEDIUM, EXPERT}
-    public enum Role {USER, COMP, USER1, USER2}
+    public enum GameMode {EASY, MEDIUM, HARD}
+    public enum Role {USER, COMP}
+    public enum Result {WIN, LOSE, DRAW}
     private int blackCounter;
     private int whiteCounter;
     private int modCount;
@@ -10,6 +16,7 @@ public class Model {
     private boolean playBlack;
     private CageState[][] field;
     private GameMode gameMode;
+    private Result result;
 
     public static class Pos {
         public int I;
@@ -28,7 +35,7 @@ public class Model {
         modblackCount = 0;
         modwhiteCount = 0;
         playBlack = true;
-        gameMode = GameMode.MEDIUM;
+        gameMode = GameMode.EASY;
         field = new CageState[8][8];
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -291,7 +298,7 @@ public class Model {
 
     public static String noTurnMessage(Role role) {
         if (role == Role.USER) return "You have no turn. Computer will turn now";
-        else return "Computer have no turn. Make you turn!";
+        else return "Computer have no turn. Make your turn!";
     }
 
     private void updateGame() {
@@ -309,15 +316,90 @@ public class Model {
 
     public boolean isGameEnd() {
         if (modwhiteCount + modblackCount + modCount == 0) return true;
-        //else return false;
-        else return true;
+        else return false;
+        //else return true;
+    }
+
+    public String GameResult() {
+        if ((playBlack && (blackCounter > whiteCounter)) || (!playBlack && (blackCounter < whiteCounter))) {
+            result = Result.WIN;
+            return "YOU WIN!";
+        } else if (blackCounter > whiteCounter) {
+            result = Result.DRAW;
+            return "DRAW!";
+        } else {
+            result = Result.LOSE;
+            return "YOU LOSE!";
+        }
+    }
+
+    public void saveResult(String userName) {
+        LinkedList<String> text = new LinkedList<String>();
+        File highScores = new File("resources/highscores.csv");
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new InputStreamReader(new FileInputStream(highScores)));
+            String strLine;
+            while ((strLine = reader.readLine()) != null)
+                text.add(strLine);
+        } catch (IOException e) { System.err.println("Can not open file");
+        } finally {
+            if (null != reader) {
+                try { reader.close(); }
+                catch (IOException e) { e.printStackTrace(System.err); }
+            }
+        }
+        String[] newResult = getStringResult(userName).split(",");
+        int pos = -1;
+        for (String s: text) {
+            String words[] = s.split(",");
+            if (words[2].equals(newResult[2]) && ((words[1].equals(newResult[1])
+                    && words[1].equals("Black") && (Integer.parseInt(words[3]) < Integer.parseInt(newResult[3]))) ||
+                    (words[1].equals(newResult[1]) && words[1].equals("White") && (Integer.parseInt(words[4]) < Integer.parseInt(newResult[4]))) ||
+                    (!words[1].equals(newResult[1]) && words[1].equals("Black") && (Integer.parseInt(words[3]) < Integer.parseInt(newResult[4]))) ||
+                    (words[1].equals(newResult[1]) && words[1].equals("White") && (Integer.parseInt(words[4]) < Integer.parseInt(newResult[3]))))) {
+                pos = text.indexOf(s);
+            }
+        }
+        if (pos != -1) text.add(pos, getStringResult(userName));
+        else text.addLast(getStringResult(userName));
+        FileWriter writer = null;
+        try {
+            writer = new FileWriter(new File("resources/highscores.csv"));
+            for (String s: text) {
+                writer.write(s + "\r\n");
+            }
+        } catch (IOException e) { System.err.println("Error in writing file: " + e.getLocalizedMessage());
+        } finally {
+            if (null != writer) {
+                try { writer.close();
+                } catch (IOException e) { e.printStackTrace(System.err); }
+            }
+        }
+    }
+
+    private String getStringResult(String name) {
+        String side;
+        if (playBlack) side = "Black";
+        else side = "White";
+        String res;
+        if (result == Result.WIN) res = "Win";
+        else if (result == Result.LOSE) res = "Lose";
+        else res = "Draw";
+        Date dateNow = new Date();
+        SimpleDateFormat formatForDateNow = new SimpleDateFormat("yyyy.MM.dd '-' hh:mm:ss");
+        String date = formatForDateNow.format(dateNow);
+        return name + "," + side + "," + res + "," + Integer.toString(blackCounter) + "," +
+                Integer.toString(whiteCounter) + "," + date;
     }
 
     public int getBlackCounter() { return blackCounter; }
     public void setBlackCounter(int i) { blackCounter = i; }
     public int getWhiteCounter() { return whiteCounter; }
     public void setWhiteCounter(int i) { whiteCounter = i; }
-    public boolean getplayBlack() { return playBlack; }
+    public boolean getPlayBlack() { return playBlack; }
     public void setPlayBlack(boolean b) { playBlack = b; }
     public CageState getCageState(int i, int j) { return field[i][j]; }
+    public GameMode getGameMode() { return gameMode; }
+    public void setGameMode(GameMode gm) { gameMode = gm; }
 }

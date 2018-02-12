@@ -1,5 +1,4 @@
 import javax.swing.*;
-import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Arrays;
@@ -7,14 +6,34 @@ import java.util.Arrays;
 public class Controller {
     private Model model;
     private View view;
-    public FieldListener fl;
-    public ReStartListener rl;
+    public FieldListener fieldListener;
+    public ReStartListener reStartListener;
+    public SaveListener saveListener;
+    public NewGameListener newGameListener;
+    public ScoresListener scoresListener;
+    public AboutListener aboutListener;
+    public ExitListener exitListener;
+    public EasyModeListener easyModeListener;
+    public MediumModeListener mediumModeListener;
+    public HardModeListener hardModeListener;
+    public ColorBlackListener colorBlackListener;
+    public ColorWhiteListener colorWhiteListener;
 
     public Controller(Model mod, View v) {
         model = mod;
         view = v;
-        fl = new FieldListener();
-        rl = new ReStartListener();
+        fieldListener = new FieldListener();
+        reStartListener = new ReStartListener();
+        saveListener = new SaveListener();
+        newGameListener = new NewGameListener();
+        scoresListener = new ScoresListener();
+        aboutListener = new AboutListener();
+        exitListener = new ExitListener();
+        easyModeListener = new EasyModeListener();
+        mediumModeListener = new MediumModeListener();
+        hardModeListener = new HardModeListener();
+        colorBlackListener = new ColorBlackListener();
+        colorWhiteListener = new ColorWhiteListener();
     }
 
 //    public class ExitListener implements ActionListener {
@@ -41,40 +60,9 @@ public class Controller {
                 view.whiteCagesCounter.setText(Integer.toString(model.getWhiteCounter()));
                 view.repaint();
                 if (model.isGameEnd()) {
-                    //JOptionPane.showMessageDialog(new JFrame(), "Game is ended!");
-                    //JOptionPane.showMessageDialog(view.endGameFrame, "Game is ended!");
-//                    Object[] options = {"Yes, please",
-//                            "No, thanks",
-//                            "No eggs, no ham!"};
-//                    int n = JOptionPane.showOptionDialog(view.endGameFrame,
-//                            "Would you like some green eggs to go "
-//                                    + "with that ham?",
-//                            "A Silly Question",
-//                            JOptionPane.YES_NO_CANCEL_OPTION,
-//                            JOptionPane.QUESTION_MESSAGE,
-//                            null,
-//                            options,
-//                            options[2]);
-                    JOptionPane pane = new JOptionPane("");
-                    pane.setPreferredSize(new Dimension(300, 300));
-                    JButton button1 = new JButton("Btn1");
-                    JButton button2 = new JButton("Btn2");
-                    JButton button3 = new JButton("Btn3");
-                    JDialog dialog = pane.createDialog("Dialog");
-                    dialog.setPreferredSize(new Dimension(300, 300));
-                    JPanel panel = new JPanel();
-                    panel.setLayout(new GridLayout(3, 9));
-                    panel.add(button1);
-                    panel.add(button2);
-                    panel.add(button3);
-                    panel.add(button3);
-                    panel.add(button2);
-                    panel.add(button1);
-                    panel.add(button3);
-                    panel.add(button1);
-                    panel.add(button2);
-                    dialog.add(panel, BorderLayout.PAGE_START);
-                    dialog.show();
+                    //view.showAbout();
+                    //view.showNewGame();
+                    view.showGameEnd(model.GameResult());
                     return;
                 }
                 if (model.haveTurn(Model.Role.COMP)) {
@@ -99,13 +87,11 @@ public class Controller {
                         view.repaint();
                     }
                     if (model.isGameEnd()) {
-                        //JOptionPane.showMessageDialog(new JFrame(), "Game is ended!");
-                        JOptionPane.showMessageDialog(view.endGameFrame, "Game is ended!");
+                        JOptionPane.showMessageDialog(new JFrame(), "Game is ended!");
                     }
                 } else {
                     if (model.isGameEnd()) {
-                        //JOptionPane.showMessageDialog(new JFrame(), "Game is ended!");
-                        JOptionPane.showMessageDialog(view.endGameFrame, "Game is ended!");
+                        JOptionPane.showMessageDialog(new JFrame(), "Game is ended!");
                     } else {
                         JOptionPane.showMessageDialog(new JFrame(), Model.noTurnMessage(Model.Role.COMP));
                     }
@@ -120,6 +106,71 @@ public class Controller {
             model.start();
             updateGame();
             btn.setText(" Restart ");
+        }
+    }
+
+    public class SaveListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String name = view.getUserName();
+            model.saveResult(name);
+        }
+    }
+
+    public class NewGameListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            view.showNewGame();
+            model.start();
+            if (!model.getPlayBlack()) model.computerTurn();
+            updateGame();
+        }
+    }
+
+    public class ScoresListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            view.showHighScores();
+        }
+    }
+
+    public class AboutListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            view.showAbout();
+        }
+    }
+
+    public class ExitListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            view.showNewGame();
+            model.start();
+        }
+    }
+
+    public class EasyModeListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            model.setGameMode(Model.GameMode.EASY);
+        }
+    }
+
+    public class MediumModeListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            model.setGameMode(Model.GameMode.MEDIUM);
+        }
+    }
+
+    public class HardModeListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            model.setGameMode(Model.GameMode.HARD);
+        }
+    }
+
+    public class ColorBlackListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            model.setPlayBlack(true);
+        }
+    }
+
+    public class ColorWhiteListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            model.setPlayBlack(false);
         }
     }
 
