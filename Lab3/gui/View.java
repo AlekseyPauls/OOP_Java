@@ -2,9 +2,14 @@ import javax.swing.*;
 import javax.swing.border.Border;
 import javax.swing.ImageIcon;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.*;
+import java.util.Arrays;
 
 public class View {
+    private Controller controller;
+
     private JFrame frame;
     private JPanel infoPanel;
     private JPanel gamePanel;
@@ -12,9 +17,9 @@ public class View {
     public JButton[][] field;
     public JLabel blackCagesCounter;
     public JLabel whiteCagesCounter;
-    public ImageIcon blackcage;
-    public ImageIcon whitecage;
-    public ImageIcon voidcage;
+    private ImageIcon blackcage;
+    private ImageIcon whitecage;
+    private ImageIcon voidcage;
 
     private NewGame newGame;
     private HighScores highScores;
@@ -22,41 +27,37 @@ public class View {
     private GameEnd gameEnd;
 
     public View() {
-        // Create table model
-        Model model = new Model();
-
-        // Create controller
-        Controller controller = new Controller(model, this);
-
-        newGame = new NewGame(controller);
+        newGame = new NewGame();
         highScores = new HighScores();
         about = new About();
-        gameEnd = new GameEnd(controller);
+        gameEnd = new GameEnd();
 
         blackcage = new ImageIcon("resources/blackcage1.png");
         whitecage = new ImageIcon("resources/whitecage1.png");
         voidcage = new ImageIcon("resources/voidcage1.png");
+    }
 
+    public void start() {
         // Create views swing UI components
-        Font menuFont = new Font("", Font.BOLD, 14);
+        Font menuFont = new Font("", Font.BOLD, 16);
         JMenuBar menuBar = new JMenuBar();
         JMenu menu = new JMenu("Menu");
         menu.setFont(menuFont);
         JMenuItem newgameItem = new JMenuItem("New Game");
         newgameItem.setFont(menuFont);
-        newgameItem.addActionListener(controller.newGameListener);
+        newgameItem.addActionListener(new NewGameListener());
         menu.add(newgameItem);
         JMenuItem scoresItem = new JMenuItem("High scores");
         scoresItem.setFont(menuFont);
-        scoresItem.addActionListener(controller.scoresListener);
+        scoresItem.addActionListener(new ScoresListener());
         menu.add(scoresItem);
         JMenuItem aboutItem = new JMenuItem("About");
         aboutItem.setFont(menuFont);
-        aboutItem.addActionListener(controller.aboutListener);
+        aboutItem.addActionListener(new AboutListener());
         menu.add(aboutItem);
         JMenuItem exitItem = new JMenuItem("Exit");
         exitItem.setFont(menuFont);
-        exitItem.addActionListener(controller.exitListener);
+        exitItem.addActionListener(new ExitListener());
         menu.add(exitItem);
         menuBar.add(menu);
 
@@ -71,7 +72,7 @@ public class View {
         reStart.setFont(infoFont);
         reStart.setBackground(Color.WHITE);
         reStart.setBorder(redline);
-        reStart.addActionListener(controller.reStartListener);
+        reStart.addActionListener(new ReStartListener());
         blackCages.setFont(infoFont);
         whiteCages.setFont(infoFont);
         blackCagesCounter.setFont(infoFont);
@@ -107,12 +108,12 @@ public class View {
                 field[i][j] = new JButton(cageIcon);
                 field[i][j].setBorder(blackline);
                 fieldPanel.add(field[i][j]);
-                field[i][j].addActionListener(controller.fieldListener);
+                field[i][j].addActionListener(new FieldListener());
             }
         }
 
         // Display it all in a scrolling window and make the window appear
-        frame = new JFrame("IAmSwinger:)"); // Создание окна с названием
+        frame = new JFrame("Reversi"); // Создание окна с названием
         frame.setPreferredSize(new Dimension(700, 830));
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); // Деструктор окна (при нажатии на крестик)
         frame.add(infoPanel, BorderLayout.PAGE_START);
@@ -121,6 +122,10 @@ public class View {
         frame.pack();
         frame.setLocationRelativeTo(null);
         frame.setVisible(true); // Делает окно видимым
+    }
+
+    public void setController(Controller c) {
+        controller = c;
     }
 
     public void repaint() {
@@ -150,19 +155,54 @@ public class View {
         gameEnd.show();
     }
 
+    private static class Pos {
+        public int I;
+        public int J;
+
+        public Pos(int i, int j) {
+            I = i;
+            J = j;
+        }
+    }
+
+    private Pos getCagePos(JButton btn) {
+        int x = -1;
+        int y = -1;
+        for (int i = 0; i < 8; i++) {
+            if (Arrays.asList(field[i]).indexOf(btn) != -1) {
+                x = i;
+                y = Arrays.asList(field[i]).indexOf(btn);
+            }
+        }
+        Pos p = new Pos(x, y);
+        return p;
+    }
+
+    public void setBlackImage(JButton btn) {
+        btn.setIcon(blackcage);
+    }
+
+    public void setWhiteImage(JButton btn) {
+        btn.setIcon(whitecage);
+    }
+
+    public void setVoidImage(JButton btn) {
+        btn.setIcon(voidcage);
+    }
+
     private class NewGame {
         private JDialog dialog;
 
-        public NewGame(Controller controller) {
+        public NewGame() {
             JOptionPane pane = new JOptionPane("");
             pane.setPreferredSize(new Dimension(350, 250));
             JRadioButton easyMode = new JRadioButton("Easy");
-            easyMode.addActionListener(controller.easyModeListener);
+            easyMode.addActionListener(new EasyModeListener());
             easyMode.setSelected(true);
             JRadioButton mediumMode = new JRadioButton("Medium");
-            mediumMode.addActionListener(controller.mediumModeListener);
+            mediumMode.addActionListener(new MediumModeListener());
             JRadioButton hardMode = new JRadioButton("Hard");
-            hardMode.addActionListener(controller.hardModeListener);
+            hardMode.addActionListener(new HardModeListener());
             ButtonGroup groupMode = new ButtonGroup();
             groupMode.add(easyMode);
             groupMode.add(mediumMode);
@@ -170,12 +210,12 @@ public class View {
             ImageIcon blackSide = new ImageIcon("resources/blackside.png");
             //JRadioButton colorBlack = new JRadioButton("Black");
             JRadioButton colorBlack = new JRadioButton("Black", blackSide);
-            colorBlack.addActionListener(controller.colorBlackListener);
+            colorBlack.addActionListener(new ColorBlackListener());
             colorBlack.setSelected(true);
             ImageIcon whiteSide = new ImageIcon("resources/whiteside.png");
             //JRadioButton colorWhite = new JRadioButton("White");
             JRadioButton colorWhite = new JRadioButton("White", whiteSide);
-            colorWhite.addActionListener(controller.colorWhiteListener);
+            colorWhite.addActionListener(new ColorWhiteListener());
             ButtonGroup groupColor = new ButtonGroup();
             groupColor.add(colorBlack);
             groupColor.add(colorWhite);
@@ -293,6 +333,7 @@ public class View {
             JScrollPane scr = new JScrollPane(panel);
             scr.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
             scr.setPreferredSize(new Dimension(300, 400));
+
             dialog.add(scr, BorderLayout.PAGE_START);
         }
 
@@ -330,6 +371,7 @@ public class View {
             JScrollPane scr = new JScrollPane(textArea);
             scr.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
             scr.setPreferredSize(new Dimension(300, 400));
+            textArea.setCaretPosition(0);
             dialog.add(scr, BorderLayout.PAGE_START);
         }
 
@@ -343,7 +385,7 @@ public class View {
         private JLabel resultLabel;
         private JTextField name;
 
-        public GameEnd(Controller controller) {
+        public GameEnd() {
             JOptionPane pane = new JOptionPane("");
             pane.setPreferredSize(new Dimension(450, 200));
             dialog = pane.createDialog("Game End");
@@ -379,7 +421,7 @@ public class View {
             constraint.ipadx = 0;
             JButton save = new JButton("Save result");
             save.setFont(font);
-            save.addActionListener(controller.saveListener);
+            save.addActionListener(new SaveListener());
             panel.add(save, constraint);
             dialog.add(panel, BorderLayout.PAGE_START);
         }
@@ -394,6 +436,87 @@ public class View {
 
         public String getName() {
             return name.getText();
+        }
+    }
+
+    private class FieldListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            JButton btn = (JButton) e.getSource();
+            View.Pos pos = getCagePos(btn);
+            controller.makeTurn(pos.I, pos.J, btn);
+        }
+    }
+
+    private class ReStartListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            JButton btn = (JButton) e.getSource();
+            controller.start();
+            btn.setText(" Restart ");
+        }
+    }
+
+    private class SaveListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            String name = getUserName();
+            controller.saveResult(name);
+            JButton btn = (JButton) e.getSource();
+            btn.setText("Saved!");
+            btn.setEnabled(false);
+        }
+    }
+
+    private class NewGameListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            showNewGame();
+            controller.newGame();
+        }
+    }
+
+    private class ScoresListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            showHighScores();
+        }
+    }
+
+    private class AboutListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            showAbout();
+        }
+    }
+
+    private class ExitListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            System.exit(0);
+        }
+    }
+
+    private class EasyModeListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            controller.setGameMode(Model.GameMode.EASY);
+        }
+    }
+
+    private class MediumModeListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            controller.setGameMode(Model.GameMode.MEDIUM);
+        }
+    }
+
+    private class HardModeListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            controller.setGameMode(Model.GameMode.HARD);
+        }
+    }
+
+    private class ColorBlackListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            controller.setPlayBlack(true);
+        }
+    }
+
+    private class ColorWhiteListener implements ActionListener {
+        public void actionPerformed(ActionEvent e) {
+            controller.setPlayBlack(false);
         }
     }
 }

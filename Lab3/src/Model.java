@@ -18,16 +18,6 @@ public class Model {
     private GameMode gameMode;
     private Result result;
 
-    public static class Pos {
-        public int I;
-        public int J;
-
-        public Pos(int i, int j) {
-            I = i;
-            J = j;
-        }
-    }
-
     public Model() {
         blackCounter = 0;
         whiteCounter = 0;
@@ -93,6 +83,15 @@ public class Model {
             cs = CageState.WHITE;
             mcs = CageState.MODWHITE;
         }
+        if (gameMode == GameMode.EASY) f = easyTurn(cs, mcs);
+        else if (gameMode == GameMode.MEDIUM) f = mediumTurn(cs, mcs);
+        else f = hardTurn(cs, mcs);
+        updateGame();
+        return f;
+    }
+
+    private boolean easyTurn(CageState cs, CageState mcs) {
+        boolean f = false;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if (field[i][j] == CageState.MOD || field[i][j] == mcs) {
@@ -102,10 +101,19 @@ public class Model {
                     break;
                 }
             }
-            if (f == true) break;
+            if (f) break;
         }
-        updateGame();
         return f;
+    }
+
+    /* It is just an illusion of choice */
+
+    private boolean mediumTurn(CageState cs, CageState mcs) {
+        return easyTurn(cs, mcs);
+    }
+
+    private boolean hardTurn(CageState cs, CageState mcs) {
+        return easyTurn(cs, mcs);
     }
 
     private int reverse(int x, int y) {
