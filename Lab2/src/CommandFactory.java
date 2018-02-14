@@ -4,31 +4,20 @@ import java.io.*;
 import java.util.HashMap;
 import java.util.logging.Logger;
 
+import static java.lang.Class.forName;
+
 public class CommandFactory {
-    private HashMap<String, String> config;
+    private HashMap<String, Calculator.Command> config;
     private static Logger log = Logger.getLogger(CommandFactory.class.getName());
 
     CommandFactory() {
-        config = new HashMap<String, String>();
+        config = new HashMap<String, Calculator.Command>();
         log.info("CommandFactory initializing");
         getConfig(new File("config.csv"));
     }
 
     public Calculator.Command getCommand(String name) {
-        Object com = new Object();
-        try {
-            Class cl = Class.forName(config.get(name));
-            try {
-                com = cl.newInstance();
-            } catch(Exception e) {
-                System.out.println(e.getMessage());
-            }
-            Calculator.Command c;
-            c = (Calculator.Command)com;
-            return c;
-        } catch(ClassNotFoundException e) {
-            throw new BadConfigExc("can not find class from config");
-        }
+        return config.get(name);
     }
 
     private void getConfig(File conf) {
@@ -45,7 +34,20 @@ public class CommandFactory {
                 if (words.length != 2){
                     throw new BadConfigExc("wrong config format");
                 }
-                config.put(words[0], words[1]);
+                Object com = new Object();
+                try {
+                    Class cl = forName(words[1]);
+                    try {
+                        com = cl.newInstance();
+                    } catch(Exception e) {
+                        System.out.println(e.getMessage());
+                    }
+                    Calculator.Command c;
+                    c = (Calculator.Command)com;
+                    config.put(words[0], c);
+                } catch(ClassNotFoundException e) {
+                    throw new BadConfigExc("can not find class from config");
+                }
             }
 
         } catch (Exception e) {
