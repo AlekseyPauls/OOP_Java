@@ -1,8 +1,8 @@
 public class Главный {
     public static void main(String[] args) {
-//        Вид view = new Вид();
-//        view.start();
         Фабрика фабрика = new Фабрика();
+        Вид view = new Вид(фабрика);
         фабрика.работать();
+        view.старт();
     }
 }

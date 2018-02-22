@@ -4,7 +4,7 @@ public class Склад {
     private int размер;
     private volatile LinkedList<Деталь> деталиНаСкладе;
     private volatile LinkedList<Изделие> изделияНаСкладе;
-//        private final boolean режим; // true - склад деталей, false - склад изделий
+    private volatile boolean нуженСборщик = false;
 
     public Склад(int р) {
         размер = р;
@@ -12,47 +12,93 @@ public class Склад {
         изделияНаСкладе = new LinkedList<>();
     }
 
-    public void положить(Деталь деталь) {
+    public synchronized void положить(Деталь деталь) {
+        while (нетМестаДляДеталей()) {
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {}
+        }
         деталиНаСкладе.add(деталь);
+        notifyAll();
     }
 
-    public void положить(Изделие изделие) {
+    public synchronized void положить(Изделие изделие) {
+        while (нетМестаДляИзделий()) {
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {}
+        }
         изделияНаСкладе.add(изделие);
+        notifyAll();
     }
 
-    public Деталь отправитьДеталь() {
-        Деталь деталь = деталиНаСкладе.getFirst();
-        деталиНаСкладе.removeFirst();
+    public synchronized Деталь отправитьДеталь() {
+        while (нетДеталей()) {
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {}
+        }
+        Деталь деталь = деталиНаСкладе.removeFirst();
+        notifyAll();
         return деталь;
     }
 
-    public Изделие отправитьИзделие() {
-        Изделие изделие = изделияНаСкладе.getFirst();
-        изделияНаСкладе.removeFirst();
+    public synchronized Изделие отправитьИзделие() {
+        while (нетИзделий()) {
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {}
+        }
+        Изделие изделие = изделияНаСкладе.removeFirst();
+        нуженСборщик = true;
+        notifyAll();
         return изделие;
     }
 
+    public synchronized void нуженСборщик() {
+        while (!нуженСборщик) {
+            try {
+                wait();
+            }
+            catch (InterruptedException e) {}
+        }
+        нуженСборщик = false;
+        notifyAll();
+    }
+
     public boolean нетМестаДляДеталей() {
-        System.out.println("Проверка склада деталей на полноту, " + деталиНаСкладе.size());
         if (деталиНаСкладе.size() == размер) return true;
         else return false;
     }
 
     public boolean нетДеталей() {
-        System.out.println("Проверка склада деталей на пустоту, " + деталиНаСкладе.size());
         if (деталиНаСкладе.size() == 0) return true;
         else return false;
     }
 
     public boolean нетМестаДляИзделий() {
-        System.out.println("Проверка склада изделий на полноту, " + изделияНаСкладе.size());
         if (изделияНаСкладе.size() == размер) return true;
         else return false;
     }
 
     public boolean нетИзделий() {
-        System.out.println("Проверка склада изделий на пустоту, " + изделияНаСкладе.size());
         if (изделияНаСкладе.size() == 0) return true;
         else return false;
+    }
+
+    public int деталейНаСкладе() {
+        return деталиНаСкладе.size();
+    }
+
+    public int изделийНаСкладе() {
+        return изделияНаСкладе.size();
+    }
+
+    public int размер() {
+        return размер;
     }
 }

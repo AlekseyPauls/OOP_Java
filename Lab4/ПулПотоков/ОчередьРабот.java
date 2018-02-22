@@ -40,7 +40,6 @@ public class ОчередьРабот
                         {
                         }
                     }
-
                     р = (Runnable) очередь.removeFirst();
                 }
                 try {

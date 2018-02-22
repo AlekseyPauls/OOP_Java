@@ -1,12 +1,13 @@
 public class ПоставщикДеталей implements Runnable {
-    //private static volatile int идентификатор = 0;
     private int идентификатор = 0;
-    private int скоростьРаботы; // нс/двигатель
+    //public static volatile int идентификатор = 0;
     private String названиеДетали;
     private Склад складДеталей;
+    public static final int максСкорость = 10;
+    public static final int минСкорость = 1;
+    private int скоростьРаботы = (максСкорость + минСкорость) / 2;
 
     public ПоставщикДеталей(Склад ск, String нд) {
-        скоростьРаботы = 5;
         складДеталей = ск;
         названиеДетали = нд;
     }
@@ -16,7 +17,7 @@ public class ПоставщикДеталей implements Runnable {
         while(true) {
             отправитьДеталь();
             try {
-                Thread.sleep(1000, скоростьРаботы);
+                Thread.sleep(1000 / скоростьРаботы);
             } catch (InterruptedException e) {
                 System.out.println("Bad");
             }
@@ -24,24 +25,22 @@ public class ПоставщикДеталей implements Runnable {
     }
 
     public synchronized void отправитьДеталь() {
-        while (складДеталей.нетМестаДляДеталей()) {
-            try {
-                wait();
-            }
-            catch (InterruptedException e) {}
-        }
         Деталь деталь = new Деталь(идентификатор, названиеДетали);
         идентификатор++;
-        System.out.println(названиеДетали + " " + идентификатор + " отправлен");
         складДеталей.положить(деталь);
-        notifyAll();
+        //System.out.println(названиеДетали + " " + (идентификатор-1) + " отправлен");
     }
 
     public void установитьСкоростьРаботы(int скор) {
+        System.out.println(скоростьРаботы);
         скоростьРаботы = скор;
     }
 
     public int получитьСкоростьРаботы() {
         return скоростьРаботы;
+    }
+
+    public int всегоПроизведено() {
+        return идентификатор;
     }
 }

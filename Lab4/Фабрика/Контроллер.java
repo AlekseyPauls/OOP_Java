@@ -3,6 +3,7 @@ import java.util.LinkedList;
 public class Контроллер implements Runnable{
     private ОчередьРабот очередьРабот;
     private int количествоСборщиков;
+    private int всегоПроизведено;
     private LinkedList<Склад> склады;
     private Склад складИзделий;
     private static volatile int идентификатор = 0;
@@ -10,6 +11,7 @@ public class Контроллер implements Runnable{
 
     public Контроллер(int кс, String ни, Склад ски, Склад ... ск) {
         количествоСборщиков = кс;
+        всегоПроизведено = 0;
         очередьРабот = new ОчередьРабот(количествоСборщиков);
         названиеИзделия = ни;
         складИзделий = ски;
@@ -21,18 +23,25 @@ public class Контроллер implements Runnable{
     }
 
     public void run() {
+        for (int и = 0; и < складИзделий.размер(); и++) {
+            добавитьСтартовуюЗадачу();
+        }
         while(true) {
+            //System.out.println("Запуск нового сборщика");
             добавитьЗадачу();
         }
     }
 
-    public synchronized void добавитьЗадачу() {
-        System.out.println("Вход в контроллер");
-        try {
-            wait();
-        }
-        catch (InterruptedException e) {}
+    public void добавитьСтартовуюЗадачу() {
         очередьРабот.execute(new Сборщик(названиеИзделия, складИзделий, склады));
-        System.out.println("Сборщик создан");
+    }
+
+    public void добавитьЗадачу() {
+        складИзделий.нуженСборщик();
+        очередьРабот.execute(new Сборщик(названиеИзделия, складИзделий, склады));
+    }
+
+    public int произведеноМашин() {
+        return Сборщик.всегоПроизведено();
     }
 }

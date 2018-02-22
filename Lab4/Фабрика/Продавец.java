@@ -1,12 +1,14 @@
 public class Продавец implements Runnable{
     private Склад складИзделий;
     private int номерПродавца;
+    private static volatile int всегоПродано = 0;
     private static int количествоПродавцов = 0;
-    private int скоростьПродажи;
+    public static final int максСкорость = 10;
+    public static final int минСкорость = 1;
+    private static int скоростьПродажи = (максСкорость + минСкорость) / 2;
 
     public Продавец(Склад ски) {
         складИзделий = ски;
-        скоростьПродажи = 5;;
         номерПродавца = количествоПродавцов;
         количествоПродавцов++;
     }
@@ -15,31 +17,28 @@ public class Продавец implements Runnable{
         while (true) {
             продажа();
             try {
-                Thread.sleep(0, скоростьПродажи);
+                Thread.sleep(1000 / скоростьПродажи);
             } catch (InterruptedException e) {
                 System.out.println("Bad");
             }
         }
     }
 
-    public synchronized void продажа() {
-        System.out.println("Продавец разбужен");
-        while (складИзделий.нетИзделий()) {
-            try {
-                wait();
-            }
-            catch (InterruptedException e) {}
-        }
+    public void продажа() {
         Изделие изделие = складИзделий.отправитьИзделие();
-        System.out.println("Продавец " + номерПродавца + ": " + изделие.получитьНазвание() + " " + изделие.получитьИдентификатор() + "");
-        notifyAll();
+        всегоПродано++;
+        //System.out.println("Продавец " + номерПродавца + ": " + изделие.получитьНазвание() + " " + изделие.получитьИдентификатор() + "");
     }
 
-    public void установитьСкоростьПродажи(int скор) {
+    public static void установитьСкоростьПродажи(int скор) {
         скоростьПродажи = скор;
     }
 
-    public int получитьСкоростьПродажи() {
+    public static int получитьСкоростьПродажи() {
         return скоростьПродажи;
+    }
+
+    public static int получитьВсегоПродано() {
+        return всегоПродано;
     }
 }
